@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 import BusinessPanel from "./BusinessPanel";
+import OrdersPage from "./OrdersPage";
+import RequestsPage from "./RequestsPage";
 
 const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
 
@@ -106,6 +108,15 @@ function ChatPage() {
 function App() {
   if (window.location.pathname === "/business") {
     return <BusinessPanel apiUrl={API_URL} />;
+    return <BusinessPanel />;
+  }
+
+  if (window.location.pathname === "/orders") {
+    return <OrdersPage />;
+  }
+
+  if (window.location.pathname === "/requests") {
+    return <RequestsPage />;
   }
 
   return <ChatPage />;
