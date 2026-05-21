@@ -4,13 +4,13 @@ function BusinessPanel() {
   const [company, setCompany] = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/company")
+    fetch("https://ai-commerce-assistant-w59n.onrender.com/company")
       .then((res) => res.json())
       .then((data) => setCompany(data));
   }, []);
 
   const saveCompany = async () => {
-    await fetch("http://127.0.0.1:5000/company", {
+    await fetch("http://127https://ai-commerce-assistant-w59n.onrender.com.0.0.1:5000/company", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
