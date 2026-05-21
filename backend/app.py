@@ -21,16 +21,10 @@ def chat():
 
         cevap = cevap_ver(mesaj, customer_id)
 
-        return jsonify({
-            "reply": cevap
-        })
+        return jsonify({"reply": cevap})
 
     except Exception as e:
-        print("HATA:", e)
-
-        return jsonify({
-            "reply": f"Hata oluştu: {str(e)}"
-        })
+        return jsonify({"reply": f"Hata oluştu: {str(e)}"})
 
 
 @app.route("/company", methods=["GET"])
@@ -42,6 +36,20 @@ def get_company():
         json.dumps(company, ensure_ascii=False, indent=4),
         content_type="application/json; charset=utf-8"
     )
+
+
+@app.route("/company", methods=["POST"])
+def update_company():
+    try:
+        data = request.get_json()
+
+        with open("company_config.json", "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
+        return jsonify({"message": "İşletme bilgileri güncellendi."})
+
+    except Exception as e:
+        return jsonify({"message": f"Güncelleme hatası: {str(e)}"}), 500
 
 
 @app.route("/orders", methods=["GET"])
