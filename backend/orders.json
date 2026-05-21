@@ -1,0 +1,24 @@
+[
+    {
+        "id": 1,
+        "customer_name": "Ebrar Öz",
+        "phone": "0555 111 22 33",
+        "address": "İstanbul Bahçelievler",
+        "product": "tişört",
+        "color": "siyah",
+        "size": "L",
+        "status": "Sipariş alındı"
+    },
+    {
+        "id": 2,
+        "customer_name": "Ebrar Öz",
+        "phone": "0555 111 22 33",
+        "address": "İstanbul Bahçelievler",
+        "product_code": "TS-56",
+        "product_name": "Siyah Baskılı Tişört",
+        "option": "Siyah",
+        "size_or_package": "L",
+        "quantity": "1",
+        "status": "Sipariş alındı"
+    }
+]

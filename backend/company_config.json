@@ -1,0 +1,35 @@
+{
+  "company_name": "Demo E-Ticaret",
+  "sector": "Genel E-Ticaret",
+
+  "company_tone": "Samimi ama profesyonel",
+
+  "products": [
+
+    {
+      "code":"TS-56",
+      "name":"Siyah Baskılı Tişört",
+      "price":"499 TL",
+      "colors":["Siyah","Beyaz"],
+      "sizes":["S","M","L","XL"],
+      "stock":15
+    },
+
+    {
+      "code":"TS-75",
+      "name":"Siyah Baskısız Tişört",
+      "price":"549 TL",
+      "colors":["Siyah","Mavi"],
+      "sizes":["S","M","L","XL"],
+      "stock":12
+    }
+
+  ],
+
+  "rules":[
+    "Müşteriyle samimi konuş",
+    "Stokta olmayan ürün satılamaz",
+    "Kargo 2-4 iş günü",
+    "İade süresi 14 gündür"
+  ]
+}
