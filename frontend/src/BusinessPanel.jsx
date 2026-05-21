@@ -1,34 +1,43 @@
 import { useEffect, useState } from "react";
 
+const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
+
 function BusinessPanel() {
   const [company, setCompany] = useState(null);
 
   useEffect(() => {
-    fetch("https://ai-commerce-assistant-w59n.onrender.com/company")
+    fetch(`${API_URL}/company`)
       .then((res) => res.json())
-      .then((data) => setCompany(data));
+      .then((data) => setCompany(data))
+      .catch(() => alert("İşletme bilgileri alınamadı."));
   }, []);
 
   const saveCompany = async () => {
-    await fetch("http://127https://ai-commerce-assistant-w59n.onrender.com.0.0.1:5000/company", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(company)
-    });
+    try {
+      const response = await fetch(`${API_URL}/company`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(company)
+      });
 
-    alert("İşletme bilgileri kaydedildi.");
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("İşletme bilgileri kaydedildi.");
+      } else {
+        alert(data.message || "Kaydetme sırasında hata oluştu.");
+      }
+    } catch (error) {
+      alert("Backend bağlantısı kurulamadı.");
+    }
   };
 
   const updateProduct = (index, field, value) => {
     const newProducts = [...company.products];
     newProducts[index][field] = value;
-
-    setCompany({
-      ...company,
-      products: newProducts
-    });
+    setCompany({ ...company, products: newProducts });
   };
 
   const addProduct = () => {
@@ -50,11 +59,7 @@ function BusinessPanel() {
 
   const removeProduct = (index) => {
     const newProducts = company.products.filter((_, i) => i !== index);
-
-    setCompany({
-      ...company,
-      products: newProducts
-    });
+    setCompany({ ...company, products: newProducts });
   };
 
   if (!company) return <div>Yükleniyor...</div>;
@@ -65,47 +70,37 @@ function BusinessPanel() {
         <h2>İşletme Ayar Paneli</h2>
 
         <p className="panelInfo">
-          Bu alan müşteriye görünmez. İşletme kendi ürünlerini, stoklarını ve
-          kurallarını buradan belirler.
+          Bu alan müşteriye görünmez. İşletme kendi ürünlerini, stoklarını ve kurallarını buradan belirler.
         </p>
 
         <label>Firma Adı</label>
         <input
-          value={company.company_name}
+          value={company.company_name || ""}
           onChange={(e) =>
-            setCompany({
-              ...company,
-              company_name: e.target.value
-            })
+            setCompany({ ...company, company_name: e.target.value })
           }
         />
 
         <label>Sektör</label>
         <input
-          value={company.sector}
+          value={company.sector || ""}
           onChange={(e) =>
-            setCompany({
-              ...company,
-              sector: e.target.value
-            })
+            setCompany({ ...company, sector: e.target.value })
           }
         />
 
         <label>Konuşma Tarzı</label>
         <input
-          value={company.company_tone}
+          value={company.company_tone || ""}
           onChange={(e) =>
-            setCompany({
-              ...company,
-              company_tone: e.target.value
-            })
+            setCompany({ ...company, company_tone: e.target.value })
           }
         />
 
         <label>İşletme Kuralları</label>
         <textarea
           rows="7"
-          value={company.rules.join("\n")}
+          value={(company.rules || []).join("\n")}
           onChange={(e) =>
             setCompany({
               ...company,
@@ -116,32 +111,26 @@ function BusinessPanel() {
 
         <h3>Ürün / Hizmet Bilgileri</h3>
 
-        {company.products.map((product, index) => (
+        {(company.products || []).map((product, index) => (
           <div className="productBox" key={index}>
             <label>Ürün Kodu</label>
             <input
               value={product.code || ""}
-              onChange={(e) =>
-                updateProduct(index, "code", e.target.value)
-              }
+              onChange={(e) => updateProduct(index, "code", e.target.value)}
               placeholder="Örn: TS-56"
             />
 
             <label>Ürün / Hizmet Adı</label>
             <input
-              value={product.name}
-              onChange={(e) =>
-                updateProduct(index, "name", e.target.value)
-              }
+              value={product.name || ""}
+              onChange={(e) => updateProduct(index, "name", e.target.value)}
               placeholder="Örn: Siyah Baskılı Tişört"
             />
 
             <label>Fiyat</label>
             <input
-              value={product.price}
-              onChange={(e) =>
-                updateProduct(index, "price", e.target.value)
-              }
+              value={product.price || ""}
+              onChange={(e) => updateProduct(index, "price", e.target.value)}
               placeholder="Örn: 499 TL"
             />
 
@@ -174,16 +163,13 @@ function BusinessPanel() {
             <label>Stok</label>
             <input
               type="number"
-              value={product.stock}
+              value={product.stock || 0}
               onChange={(e) =>
                 updateProduct(index, "stock", Number(e.target.value))
               }
             />
 
-            <button
-              className="removeProductBtn"
-              onClick={() => removeProduct(index)}
-            >
+            <button className="removeProductBtn" onClick={() => removeProduct(index)}>
               Ürünü Sil
             </button>
           </div>
