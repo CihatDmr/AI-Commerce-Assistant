@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./App.css";
 import BusinessPanel from "./BusinessPanel";
 
+const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
+
 function ChatPage() {
   const [messages, setMessages] = useState([
     {
@@ -22,17 +24,18 @@ function ChatPage() {
 
     setMessages((prev) => [...prev, userMessage]);
 
-    const current = input;
+    const currentMessage = input;
     setInput("");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/chat", {
+      const response = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          message: current
+          message: currentMessage,
+          customer_id: "demo_customer_1"
         })
       });
 
@@ -45,7 +48,9 @@ function ChatPage() {
           text: data.reply
         }
       ]);
-    } catch {
+    } catch (error) {
+      console.error("Backend bağlantı hatası:", error);
+
       setMessages((prev) => [
         ...prev,
         {
@@ -85,7 +90,9 @@ function ChatPage() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Mesaj yaz..."
             onKeyDown={(e) => {
-              if (e.key === "Enter") sendMessage();
+              if (e.key === "Enter") {
+                sendMessage();
+              }
             }}
           />
 
@@ -98,7 +105,7 @@ function ChatPage() {
 
 function App() {
   if (window.location.pathname === "/business") {
-    return <BusinessPanel />;
+    return <BusinessPanel apiUrl={API_URL} />;
   }
 
   return <ChatPage />;
