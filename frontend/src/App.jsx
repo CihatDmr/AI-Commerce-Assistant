@@ -107,7 +107,6 @@ function ChatPage() {
 
 function App() {
   if (window.location.pathname === "/business") {
-    return <BusinessPanel apiUrl={API_URL} />;
     return <BusinessPanel />;
   }
 
