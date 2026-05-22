@@ -2,14 +2,45 @@ import { useEffect, useState } from "react";
 
 const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
 
+function getAdminHeaders() {
+  const password = localStorage.getItem("admin_password");
+
+  return {
+    "Content-Type": "application/json",
+    "X-Admin-Password": password || ""
+  };
+}
+
 function OrdersPage() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const getOrders = () => {
-    fetch(`${API_URL}/orders`)
-      .then((res) => res.json())
-      .then((data) => setOrders(data))
-      .catch(() => alert("Siparişler alınamadı."));
+  const getOrders = async () => {
+    try {
+      const response = await fetch(`${API_URL}/orders`, {
+        method: "GET",
+        headers: getAdminHeaders()
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        alert("Oturum süreniz doldu. Lütfen tekrar giriş yapın.");
+        localStorage.removeItem("admin_password");
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        setOrders([]);
+      }
+    } catch {
+      alert("Siparişler alınamadı.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -25,14 +56,19 @@ function OrdersPage() {
   const saveOrder = async (order) => {
     const response = await fetch(`${API_URL}/orders/${order.id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: getAdminHeaders(),
       body: JSON.stringify(order)
     });
 
     const data = await response.json();
-    alert(data.message);
+
+    if (response.status === 401) {
+      localStorage.removeItem("admin_password");
+      window.location.href = "/admin-login";
+      return;
+    }
+
+    alert(data.message || "Sipariş güncellendi.");
     getOrders();
   };
 
@@ -44,18 +80,41 @@ function OrdersPage() {
     if (!confirmDelete) return;
 
     const response = await fetch(`${API_URL}/orders/${orderId}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: getAdminHeaders()
     });
 
     const data = await response.json();
-    alert(data.message);
+
+    if (response.status === 401) {
+      localStorage.removeItem("admin_password");
+      window.location.href = "/admin-login";
+      return;
+    }
+
+    alert(data.message || "Sipariş silindi.");
     getOrders();
   };
+
+  if (loading) {
+    return (
+      <div className="businessPage">
+        <div className="businessCard">
+          <h2>Sipariş Yönetimi</h2>
+          <p>Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="businessPage">
       <div className="businessCard">
         <h2>Sipariş Yönetimi</h2>
+
+        <button onClick={() => (window.location.href = "/admin")}>
+          Admin Panele Dön
+        </button>
 
         {orders.length === 0 ? (
           <p>Henüz sipariş bulunmuyor.</p>
@@ -72,6 +131,7 @@ function OrdersPage() {
               <p><strong>Seçenek:</strong> {order.option || order.color || "-"}</p>
               <p><strong>Beden/Paket:</strong> {order.size_or_package || order.size || "-"}</p>
               <p><strong>Adet:</strong> {order.quantity || "-"}</p>
+              <p><strong>Ödeme:</strong> {order.payment_method || "-"}</p>
 
               <label>Sipariş Durumu</label>
               <select
