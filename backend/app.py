@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from chatbot import cevap_ver
 import json
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +19,16 @@ def load_json(file_name, default_data):
 def save_json(file_name, data):
     with open(file_name, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def check_admin():
+    admin_password = os.getenv("ADMIN_PASSWORD")
+    incoming_password = request.headers.get("X-Admin-Password")
+
+    if not admin_password:
+        return False
+
+    return incoming_password == admin_password
 
 
 @app.route("/")
@@ -40,8 +51,30 @@ def chat():
         return jsonify({"reply": f"Hata oluştu: {str(e)}"})
 
 
+@app.route("/admin-login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+    password = data.get("password", "")
+
+    admin_password = os.getenv("ADMIN_PASSWORD")
+
+    if password == admin_password:
+        return jsonify({
+            "success": True,
+            "message": "Giriş başarılı."
+        })
+
+    return jsonify({
+        "success": False,
+        "message": "Şifre hatalı."
+    }), 401
+
+
 @app.route("/company", methods=["GET"])
 def get_company():
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     company = load_json("company_config.json", {})
 
     return Response(
@@ -52,6 +85,9 @@ def get_company():
 
 @app.route("/company", methods=["POST"])
 def update_company():
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     try:
         data = request.get_json()
         save_json("company_config.json", data)
@@ -64,6 +100,9 @@ def update_company():
 
 @app.route("/orders", methods=["GET"])
 def get_orders():
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     orders = load_json("orders.json", [])
 
     return Response(
@@ -74,6 +113,9 @@ def get_orders():
 
 @app.route("/orders/<int:order_id>", methods=["PUT"])
 def update_order(order_id):
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     orders = load_json("orders.json", [])
     data = request.get_json()
 
@@ -93,6 +135,9 @@ def update_order(order_id):
 
 @app.route("/orders/<int:order_id>", methods=["DELETE"])
 def delete_order(order_id):
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     orders = load_json("orders.json", [])
 
     new_orders = [
@@ -110,6 +155,9 @@ def delete_order(order_id):
 
 @app.route("/handoff_requests", methods=["GET"])
 def get_handoff_requests():
+    if not check_admin():
+        return jsonify({"message": "Yetkisiz erişim."}), 401
+
     handoff_requests = load_json("handoff_requests.json", [])
 
     return Response(

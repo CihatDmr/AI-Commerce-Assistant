@@ -2,36 +2,47 @@ import { useEffect, useState } from "react";
 
 const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
 
+function getAdminHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "X-Admin-Password": localStorage.getItem("admin_password")
+  };
+}
+
 function BusinessPanel() {
   const [company, setCompany] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/company`)
-      .then((res) => res.json())
+    fetch(`${API_URL}/company`, {
+      headers: getAdminHeaders()
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          localStorage.removeItem("admin_password");
+          window.location.href = "/admin-login";
+        }
+        return res.json();
+      })
       .then((data) => setCompany(data))
       .catch(() => alert("İşletme bilgileri alınamadı."));
   }, []);
 
   const saveCompany = async () => {
-    try {
-      const response = await fetch(`${API_URL}/company`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(company)
-      });
+    const response = await fetch(`${API_URL}/company`, {
+      method: "POST",
+      headers: getAdminHeaders(),
+      body: JSON.stringify(company)
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        alert("İşletme bilgileri kaydedildi.");
-      } else {
-        alert(data.message || "Kaydetme sırasında hata oluştu.");
-      }
-    } catch (error) {
-      alert("Backend bağlantısı kurulamadı.");
+    if (response.status === 401) {
+      localStorage.removeItem("admin_password");
+      window.location.href = "/admin-login";
+      return;
     }
+
+    alert(data.message);
   };
 
   const updateProduct = (index, field, value) => {
@@ -69,10 +80,6 @@ function BusinessPanel() {
       <div className="businessCard">
         <h2>İşletme Ayar Paneli</h2>
 
-        <p className="panelInfo">
-          Bu alan müşteriye görünmez. İşletme kendi ürünlerini, stoklarını ve kurallarını buradan belirler.
-        </p>
-
         <label>Firma Adı</label>
         <input
           value={company.company_name || ""}
@@ -84,9 +91,7 @@ function BusinessPanel() {
         <label>Sektör</label>
         <input
           value={company.sector || ""}
-          onChange={(e) =>
-            setCompany({ ...company, sector: e.target.value })
-          }
+          onChange={(e) => setCompany({ ...company, sector: e.target.value })}
         />
 
         <label>Konuşma Tarzı</label>
@@ -117,24 +122,21 @@ function BusinessPanel() {
             <input
               value={product.code || ""}
               onChange={(e) => updateProduct(index, "code", e.target.value)}
-              placeholder="Örn: TS-56"
             />
 
             <label>Ürün / Hizmet Adı</label>
             <input
               value={product.name || ""}
               onChange={(e) => updateProduct(index, "name", e.target.value)}
-              placeholder="Örn: Siyah Baskılı Tişört"
             />
 
             <label>Fiyat</label>
             <input
               value={product.price || ""}
               onChange={(e) => updateProduct(index, "price", e.target.value)}
-              placeholder="Örn: 499 TL"
             />
 
-            <label>Renk / Çeşit Seçenekleri</label>
+            <label>Renk / Çeşit</label>
             <input
               value={(product.colors || []).join(", ")}
               onChange={(e) =>
@@ -144,10 +146,9 @@ function BusinessPanel() {
                   e.target.value.split(",").map((x) => x.trim())
                 )
               }
-              placeholder="Örn: Siyah, Beyaz, Mavi"
             />
 
-            <label>Beden / Gramaj / Paket Seçenekleri</label>
+            <label>Beden / Paket</label>
             <input
               value={(product.sizes || []).join(", ")}
               onChange={(e) =>
@@ -157,7 +158,6 @@ function BusinessPanel() {
                   e.target.value.split(",").map((x) => x.trim())
                 )
               }
-              placeholder="Örn: S, M, L veya 500 gr, 1 kg"
             />
 
             <label>Stok</label>
@@ -169,7 +169,10 @@ function BusinessPanel() {
               }
             />
 
-            <button className="removeProductBtn" onClick={() => removeProduct(index)}>
+            <button
+              className="removeProductBtn"
+              onClick={() => removeProduct(index)}
+            >
               Ürünü Sil
             </button>
           </div>

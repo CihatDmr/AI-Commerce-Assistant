@@ -3,8 +3,21 @@ import "./App.css";
 import BusinessPanel from "./BusinessPanel";
 import OrdersPage from "./OrdersPage";
 import RequestsPage from "./RequestsPage";
+import AdminLogin from "./AdminLogin";
 
 const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
+
+function isAdminLoggedIn() {
+  return localStorage.getItem("admin_password");
+}
+
+function ProtectedPage({ children }) {
+  if (!isAdminLoggedIn()) {
+    return <AdminLogin />;
+  }
+
+  return children;
+}
 
 function ChatPage() {
   const [messages, setMessages] = useState([
@@ -51,8 +64,6 @@ function ChatPage() {
         }
       ]);
     } catch (error) {
-      console.error("Backend bağlantı hatası:", error);
-
       setMessages((prev) => [
         ...prev,
         {
@@ -106,16 +117,32 @@ function ChatPage() {
 }
 
 function App() {
+  if (window.location.pathname === "/admin-login") {
+    return <AdminLogin />;
+  }
+
   if (window.location.pathname === "/business") {
-    return <BusinessPanel />;
+    return (
+      <ProtectedPage>
+        <BusinessPanel />
+      </ProtectedPage>
+    );
   }
 
   if (window.location.pathname === "/orders") {
-    return <OrdersPage />;
+    return (
+      <ProtectedPage>
+        <OrdersPage />
+      </ProtectedPage>
+    );
   }
 
   if (window.location.pathname === "/requests") {
-    return <RequestsPage />;
+    return (
+      <ProtectedPage>
+        <RequestsPage />
+      </ProtectedPage>
+    );
   }
 
   return <ChatPage />;
