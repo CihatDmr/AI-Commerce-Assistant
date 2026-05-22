@@ -4,6 +4,7 @@ import BusinessPanel from "./BusinessPanel";
 import OrdersPage from "./OrdersPage";
 import RequestsPage from "./RequestsPage";
 import AdminLogin from "./AdminLogin";
+import AdminDashboard from "./AdminDashboard";
 
 const API_URL = "https://ai-commerce-assistant-w59n.onrender.com";
 
@@ -13,7 +14,7 @@ function isAdminLoggedIn() {
 
 function ProtectedPage({ children }) {
   if (!isAdminLoggedIn()) {
-    return <AdminLogin />;
+    return <AdminLogin redirectTo="/admin" />;
   }
 
   return children;
@@ -63,7 +64,7 @@ function ChatPage() {
           text: data.reply
         }
       ]);
-    } catch (error) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -109,7 +110,9 @@ function ChatPage() {
             }}
           />
 
-          <button onClick={sendMessage}>Gönder</button>
+          <button onClick={sendMessage}>
+            Gönder
+          </button>
         </div>
       </div>
     </div>
@@ -119,6 +122,14 @@ function ChatPage() {
 function App() {
   if (window.location.pathname === "/admin-login") {
     return <AdminLogin />;
+  }
+
+  if (window.location.pathname === "/admin") {
+    return (
+      <ProtectedPage>
+        <AdminDashboard />
+      </ProtectedPage>
+    );
   }
 
   if (window.location.pathname === "/business") {
