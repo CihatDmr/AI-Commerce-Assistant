@@ -12,24 +12,18 @@ function AdminLogin() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          password
-        })
+        body: JSON.stringify({ password })
       });
 
       const data = await response.json();
 
       if (data.success) {
         localStorage.setItem("admin_password", password);
-
-        alert("Giriş başarılı.");
-
-        window.location.href = "/business";
+        window.location.href = "/admin";
       } else {
-        alert(data.message);
+        alert(data.message || "Şifre hatalı.");
       }
-
-    } catch (error) {
+    } catch {
       alert("Backend bağlantı hatası.");
     }
   };
@@ -37,11 +31,10 @@ function AdminLogin() {
   return (
     <div className="businessPage">
       <div className="businessCard">
-
         <h2>Admin Giriş</h2>
 
         <p className="panelInfo">
-          İşletme paneline erişmek için şifre giriniz.
+          İşletme paneline erişmek için admin şifresi giriniz.
         </p>
 
         <input
@@ -49,12 +42,14 @@ function AdminLogin() {
           placeholder="Admin şifresi"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              login();
+            }
+          }}
         />
 
-        <button onClick={login}>
-          Giriş Yap
-        </button>
-
+        <button onClick={login}>Giriş Yap</button>
       </div>
     </div>
   );
